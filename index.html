@@ -111,7 +111,7 @@ scene.add(sun);
 
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
 
-/* ROAD (extended till finish) */
+/* ROAD */
 
 const roadLength = 7000;
 
@@ -160,7 +160,7 @@ new THREE.MeshStandardMaterial({color:0xffff00})
 car.position.y=0.25;
 scene.add(car);
 
-/* Enemies */
+/* ENEMIES */
 
 const enemies=[];
 
@@ -172,15 +172,22 @@ new THREE.MeshStandardMaterial({color:0xff0000})
 );
 
 e.position.set(Math.random()*12-6,0.25,z);
+
 scene.add(e);
 enemies.push(e);
 
 }
 
-/* enemies till finish */
+/* MANY ENEMIES */
 
-for(let i=-150;i>-6500;i-=80){
-spawnEnemy(i);
+for(let i=-120;i>-6500;i-=40){
+
+let count=Math.floor(Math.random()*3)+1;
+
+for(let j=0;j<count;j++){
+spawnEnemy(i + Math.random()*10);
+}
+
 }
 
 /* Coins */
@@ -201,8 +208,6 @@ scene.add(c);
 coins.push(c);
 
 }
-
-/* coins till finish */
 
 for(let i=-100;i>-6500;i-=50){
 spawnCoin(i);
@@ -244,16 +249,6 @@ new THREE.MeshStandardMaterial({color:0xffffff})
 
 finish.position.set(0,3,-6500);
 scene.add(finish);
-
-/* Sounds */
-
-const engineSound = new Audio("sounds/engine.mp3");
-engineSound.loop=true;
-engineSound.volume=0.3;
-engineSound.play();
-
-const coinSound = new Audio("sounds/coin.mp3");
-const crashSound = new Audio("sounds/crash.mp3");
 
 /* Controls */
 
@@ -331,11 +326,12 @@ car.position.x=Math.max(-8,Math.min(8,car.position.x));
 
 enemies.forEach(e=>{
 
+e.position.z += 0.2;
+
 if(
 Math.abs(e.position.z-car.position.z)<2 &&
 Math.abs(e.position.x-car.position.x)<1.6
 ){
-crashSound.play();
 endGame("💥 CRASHED");
 }
 
@@ -354,14 +350,13 @@ Math.abs(c.position.x-car.position.x)<1.6
 
 scene.remove(c);
 score++;
-coinSound.play();
 scoreDisplay.innerText="Coins: "+score;
 
 }
 
 });
 
-/* Rain animation */
+/* Rain */
 
 rain.forEach(r=>{
 
@@ -404,7 +399,7 @@ renderer.render(scene,camera);
 
 animate();
 
-/* End */
+/* End Game */
 
 function endGame(text){
 
