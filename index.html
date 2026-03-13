@@ -58,7 +58,6 @@ color:white;
 background:#4444ff;
 color:white;
 }
-
 </style>
 </head>
 
@@ -112,14 +111,18 @@ scene.add(sun);
 
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
 
-/* ROAD */
+/* ROAD (extended till finish) */
+
+const roadLength = 7000;
 
 const road = new THREE.Mesh(
-new THREE.PlaneGeometry(20,6000),
+new THREE.PlaneGeometry(20,roadLength),
 new THREE.MeshStandardMaterial({color:0x444444})
 );
 
 road.rotation.x = -Math.PI/2;
+road.position.z = -roadLength/2;
+
 scene.add(road);
 
 /* Buildings */
@@ -142,7 +145,7 @@ b.position.set(x,h/2,z);
 scene.add(b);
 }
 
-for(let i=-3000;i<500;i+=35){
+for(let i=-6500;i<500;i+=35){
 createBuilding(-32,i);
 createBuilding(32,i);
 }
@@ -151,21 +154,11 @@ createBuilding(32,i);
 
 const car = new THREE.Mesh(
 new THREE.BoxGeometry(2,0.5,4),
-new THREE.MeshStandardMaterial({color:0xff0000})
+new THREE.MeshStandardMaterial({color:0xffff00})
 );
 
 car.position.y=0.25;
 scene.add(car);
-
-/* Police Car */
-
-const police = new THREE.Mesh(
-new THREE.BoxGeometry(2,0.5,4),
-new THREE.MeshStandardMaterial({color:0x0000ff})
-);
-
-police.position.set(0,0.25,20);
-scene.add(police);
 
 /* Enemies */
 
@@ -175,7 +168,7 @@ function spawnEnemy(z){
 
 let e=new THREE.Mesh(
 new THREE.BoxGeometry(2,0.5,4),
-new THREE.MeshStandardMaterial({color:0xffff00})
+new THREE.MeshStandardMaterial({color:0xff0000})
 );
 
 e.position.set(Math.random()*12-6,0.25,z);
@@ -184,8 +177,10 @@ enemies.push(e);
 
 }
 
-for(let i=0;i<60;i++){
-spawnEnemy(-150-i*60);
+/* enemies till finish */
+
+for(let i=-150;i>-6500;i-=80){
+spawnEnemy(i);
 }
 
 /* Coins */
@@ -207,8 +202,10 @@ coins.push(c);
 
 }
 
-for(let i=0;i<120;i++){
-spawnCoin(-100-i*40);
+/* coins till finish */
+
+for(let i=-100;i>-6500;i-=50){
+spawnCoin(i);
 }
 
 /* Rain */
@@ -245,8 +242,18 @@ new THREE.BoxGeometry(20,6,1),
 new THREE.MeshStandardMaterial({color:0xffffff})
 );
 
-finish.position.set(0,3,-5800);
+finish.position.set(0,3,-6500);
 scene.add(finish);
+
+/* Sounds */
+
+const engineSound = new Audio("sounds/engine.mp3");
+engineSound.loop=true;
+engineSound.volume=0.3;
+engineSound.play();
+
+const coinSound = new Audio("sounds/coin.mp3");
+const crashSound = new Audio("sounds/crash.mp3");
 
 /* Controls */
 
@@ -307,8 +314,6 @@ requestAnimationFrame(animate);
 
 if(!gameOver){
 
-/* Speed */
-
 let speed=nitro?1.6:0.8;
 
 car.position.z-=speed;
@@ -322,25 +327,15 @@ if(keys["ArrowRight"]) car.position.x+=0.4;
 
 car.position.x=Math.max(-8,Math.min(8,car.position.x));
 
-/* Police chase */
-
-police.position.z -= speed*0.9;
-police.position.x += (car.position.x-police.position.x)*0.03;
-
-if(Math.abs(police.position.z-car.position.z)<2){
-endGame("🚓 CAUGHT BY POLICE");
-}
-
 /* Enemies */
 
 enemies.forEach(e=>{
-
-e.position.z+=0.4;
 
 if(
 Math.abs(e.position.z-car.position.z)<2 &&
 Math.abs(e.position.x-car.position.x)<1.6
 ){
+crashSound.play();
 endGame("💥 CRASHED");
 }
 
@@ -359,6 +354,7 @@ Math.abs(c.position.x-car.position.x)<1.6
 
 scene.remove(c);
 score++;
+coinSound.play();
 scoreDisplay.innerText="Coins: "+score;
 
 }
@@ -389,7 +385,7 @@ cpDisplay.innerText="Checkpoint: "+checkpointIndex;
 
 /* Finish */
 
-if(car.position.z<-5800){
+if(car.position.z<-6500){
 endGame("🏁 YOU WON!");
 }
 
@@ -433,4 +429,4 @@ renderer.setSize(window.innerWidth,window.innerHeight);
 </script>
 
 </body>
-  </html>
+</html>
