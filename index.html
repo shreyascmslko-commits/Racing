@@ -28,9 +28,12 @@ top:50%;
 left:50%;
 transform:translate(-50%,-50%);
 color:white;
-font-size:55px;
+font-size:40px;
 display:none;
 text-align:center;
+background:rgba(0,0,0,0.7);
+padding:20px;
+border-radius:12px;
 }
 
 #controls{
@@ -41,9 +44,9 @@ text-align:center;
 }
 
 button{
-font-size:22px;
-padding:14px 20px;
-margin:5px;
+font-size:20px;
+padding:12px 18px;
+margin:4px;
 border:none;
 border-radius:10px;
 background:#ffffffcc;
@@ -81,12 +84,12 @@ color:white;
 
 <script>
 
-/* Scene */
+/* SCENE */
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
 
-/* Camera */
+/* CAMERA */
 
 const camera = new THREE.PerspectiveCamera(
 75,
@@ -97,13 +100,13 @@ window.innerWidth/window.innerHeight,
 
 camera.position.set(0,6,14);
 
-/* Renderer */
+/* RENDERER */
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-/* Lights */
+/* LIGHTS */
 
 let sun = new THREE.DirectionalLight(0xffffff,1);
 sun.position.set(10,40,20);
@@ -122,10 +125,9 @@ new THREE.MeshStandardMaterial({color:0x444444})
 
 road.rotation.x = -Math.PI/2;
 road.position.z = -roadLength/2;
-
 scene.add(road);
 
-/* Buildings */
+/* BUILDINGS */
 
 function randomColor(){
 const colors=[0xff4d4d,0xffa64d,0xffff4d,0x4dff88,0x4dd2ff,0x7a4dff];
@@ -150,7 +152,7 @@ createBuilding(-32,i);
 createBuilding(32,i);
 }
 
-/* Player Car */
+/* PLAYER */
 
 const car = new THREE.Mesh(
 new THREE.BoxGeometry(2,0.5,4),
@@ -172,10 +174,8 @@ new THREE.MeshStandardMaterial({color:0xff0000})
 );
 
 e.position.set(Math.random()*12-6,0.25,z);
-
 scene.add(e);
 enemies.push(e);
-
 }
 
 /* MANY ENEMIES */
@@ -190,7 +190,7 @@ spawnEnemy(i + Math.random()*10);
 
 }
 
-/* Coins */
+/* COINS */
 
 const coins=[];
 
@@ -206,14 +206,13 @@ c.position.set(Math.random()*12-6,1,z);
 
 scene.add(c);
 coins.push(c);
-
 }
 
 for(let i=-100;i>-6500;i-=50){
 spawnCoin(i);
 }
 
-/* Rain */
+/* RAIN */
 
 const rain=[];
 
@@ -232,15 +231,14 @@ Math.random()*200-100
 
 scene.add(drop);
 rain.push(drop);
-
 }
 
-/* Checkpoints */
+/* CHECKPOINTS */
 
 let checkpoints=[-1000,-2000,-3000,-4000,-5000];
 let checkpointIndex=0;
 
-/* Finish */
+/* FINISH */
 
 const finish=new THREE.Mesh(
 new THREE.BoxGeometry(20,6,1),
@@ -250,7 +248,7 @@ new THREE.MeshStandardMaterial({color:0xffffff})
 finish.position.set(0,3,-6500);
 scene.add(finish);
 
-/* Controls */
+/* CONTROLS */
 
 let keys={};
 let tilt=0;
@@ -258,11 +256,7 @@ let tilt=0;
 document.addEventListener("keydown",e=>keys[e.key]=true);
 document.addEventListener("keyup",e=>keys[e.key]=false);
 
-window.addEventListener("deviceorientation",e=>{
-tilt=e.gamma;
-});
-
-/* Mobile Buttons */
+/* MOBILE BUTTONS */
 
 left.ontouchstart=()=>keys["ArrowLeft"]=true;
 right.ontouchstart=()=>keys["ArrowRight"]=true;
@@ -270,14 +264,52 @@ right.ontouchstart=()=>keys["ArrowRight"]=true;
 left.ontouchend=()=>keys["ArrowLeft"]=false;
 right.ontouchend=()=>keys["ArrowRight"]=false;
 
-/* Nitro */
+/* iOS + ANDROID TILT SUPPORT */
+
+function enableTilt(){
+
+if(typeof DeviceOrientationEvent !== "undefined" &&
+typeof DeviceOrientationEvent.requestPermission === "function"){
+
+DeviceOrientationEvent.requestPermission()
+.then(permissionState=>{
+if(permissionState==="granted"){
+window.addEventListener("deviceorientation",handleTilt);
+}
+})
+.catch(console.error);
+
+}else{
+
+window.addEventListener("deviceorientation",handleTilt);
+
+}
+
+}
+
+function handleTilt(e){
+tilt=e.gamma || 0;
+}
+
+/* SHOW MESSAGE TO ENABLE */
+
+const msg=document.getElementById("message");
+msg.innerHTML="Tap to Enable Tilt Control";
+msg.style.display="block";
+
+window.addEventListener("click",()=>{
+enableTilt();
+msg.style.display="none";
+},{once:true});
+
+/* NITRO */
 
 let nitro=false;
 
 nitro.onclick=()=>nitro=true;
 nitro.ontouchend=()=>nitro=false;
 
-/* Day Night */
+/* DAY NIGHT */
 
 let night=false;
 
@@ -293,7 +325,7 @@ scene.background=new THREE.Color(0x87ceeb);
 
 }
 
-/* Game State */
+/* GAME STATE */
 
 let score=0;
 let gameOver=false;
@@ -301,7 +333,7 @@ let gameOver=false;
 const scoreDisplay=document.getElementById("score");
 const cpDisplay=document.getElementById("checkpoint");
 
-/* Game Loop */
+/* GAME LOOP */
 
 function animate(){
 
@@ -313,7 +345,7 @@ let speed=nitro?1.6:0.8;
 
 car.position.z-=speed;
 
-/* Steering */
+/* STEERING */
 
 car.position.x+=tilt*0.02;
 
@@ -322,11 +354,11 @@ if(keys["ArrowRight"]) car.position.x+=0.4;
 
 car.position.x=Math.max(-8,Math.min(8,car.position.x));
 
-/* Enemies */
+/* ENEMY COLLISION */
 
 enemies.forEach(e=>{
 
-e.position.z += 0.2;
+e.position.z+=0.2;
 
 if(
 Math.abs(e.position.z-car.position.z)<2 &&
@@ -337,7 +369,7 @@ endGame("💥 CRASHED");
 
 });
 
-/* Coins */
+/* COINS */
 
 coins.forEach(c=>{
 
@@ -356,7 +388,7 @@ scoreDisplay.innerText="Coins: "+score;
 
 });
 
-/* Rain */
+/* RAIN */
 
 rain.forEach(r=>{
 
@@ -368,7 +400,7 @@ r.position.y=40;
 
 });
 
-/* Checkpoints */
+/* CHECKPOINT */
 
 if(checkpointIndex<checkpoints.length &&
 car.position.z<checkpoints[checkpointIndex]){
@@ -378,7 +410,7 @@ cpDisplay.innerText="Checkpoint: "+checkpointIndex;
 
 }
 
-/* Finish */
+/* FINISH */
 
 if(car.position.z<-6500){
 endGame("🏁 YOU WON!");
@@ -386,7 +418,7 @@ endGame("🏁 YOU WON!");
 
 }
 
-/* Camera */
+/* CAMERA */
 
 camera.position.x=car.position.x;
 camera.position.z=car.position.z+14;
@@ -399,19 +431,18 @@ renderer.render(scene,camera);
 
 animate();
 
-/* End Game */
+/* END GAME */
 
 function endGame(text){
 
 gameOver=true;
 
-const msg=document.getElementById("message");
 msg.innerHTML=text;
 msg.style.display="block";
 
 }
 
-/* Resize */
+/* RESIZE */
 
 window.addEventListener("resize",()=>{
 
